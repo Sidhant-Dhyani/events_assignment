@@ -1,5 +1,8 @@
+
 const mongoose = require('mongoose');
 const EventLog = require('./models/eventlog');
+const fs = require('fs');
+const path = require('path');
 
 const connectToDB = mongoose.connect('mongodb+srv://siddhantydhyani99:gmXeYJ70JYyPbNcN@cluster0.jvxhebo.mongodb.net/Events');
 
@@ -28,6 +31,7 @@ class Events {
             });
         }
         logEventInMongoDB(eventName);
+        printEventInLog(eventName);
     }
 
     off(eventName) {
@@ -45,12 +49,18 @@ function logEventInMongoDB(eventName) {
     newEventLog.save();
 }
 
-function printLogs(eventName, triggerTime) {
-    const message = `${eventName} ====> ${triggerTime}`;
-    console.log(message);
+function printEventInLog(eventName) {
+    const message = `${eventName} --> ${new Date().toISOString()}`;
+    const logFilePath = path.join(__dirname, 'app.log');
+    fs.appendFile(logFilePath, message + '\n', (err) => {
+        if (err) {
+            console.error(err);
+        }
+    });
 }
 
 const events = new Events();
 
 events.on('click', () => console.log('Click triggered!!'));
 events.trigger('click');
+
